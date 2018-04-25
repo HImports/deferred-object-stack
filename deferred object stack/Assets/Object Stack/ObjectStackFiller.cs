@@ -36,12 +36,11 @@ public class ObjectStackFiller : MonoBehaviour {
                 // run the function filling one stack, removing the task if it is complete
                 if (fillTasks[nextStack].MoveNext() == false) {
                     RemoveFillTask(nextStack);
-                    return; // stop (filler is destructing having fnished all tasks)
                 }
 
                 ++nextStack;
                 // if we've reached the end of the array, roll over next stack to be filled
-                if (nextStack == fillTasks.Length) {
+                if (nextStack >= fillTasks.Length) {
                     nextStack = 0;
                 }
             }
@@ -75,24 +74,31 @@ public class ObjectStackFiller : MonoBehaviour {
         // if the last task is removed, destroy this singleton
         if (fillTasks.Length == 1) {
 
-            Destroy(this.transform.gameObject);
+            Destroy(transform.gameObject);
             hasTasks = false;
         }
         else {
             // make an array that's 1 smaller
-            IEnumerator[] tasksRetract = new IEnumerator[fillTasks.Length - 1];
+            int fillTasksLength = fillTasks.Length;
+            int retractLength = fillTasksLength - 1;
+            IEnumerator[] tasksRetract = new IEnumerator[retractLength];
 
             // swap/move the finished task with the last task
-            IEnumerator t = fillTasks[fillTasks.Length - 1];
-            fillTasks[fillTasks.Length - 1] = fillTasks[IndexFilled];
+            IEnumerator t = fillTasks[retractLength];
+            fillTasks[retractLength] = fillTasks[IndexFilled];
             fillTasks[IndexFilled] = t;
 
             // copy the new shoter length forward, truncating the finished task
-            for (int i = tasksRetract.Length - 1; i >= 0; i--) {
+            for (int i = retractLength - 1; i >= 0; i--) {
                 tasksRetract[i] = fillTasks[i];
             }
 
             fillTasks = tasksRetract;
+
+            // don't forget... the iterator might have been on that last spot!
+            if (nextStack >= retractLength) {
+                nextStack = 0;
+            }
         }
     }
 }
