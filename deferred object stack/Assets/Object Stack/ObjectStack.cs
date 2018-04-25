@@ -16,6 +16,7 @@ public class TransformStack {
     private Transform[] stackPrefabs;           // the stack is randomly populated by these,
     private Transform stackParent;              // stacked objects are kept here in the heirarchy...
     private Transform[] objectStack;            // ...and listed for retrieval here
+    private IEnumerator fillTask;               // reference the task so we can force instantiation
     // accessors:
     public int Size {
         get { return size; }
@@ -34,7 +35,9 @@ public class TransformStack {
         }
 
         // send an IEnumerator that populates this object pool
-        ObjectStackFiller.Instance.AddFillTask(FillStackTask(size));
+        // reference it so we can step it from here, too
+        fillTask = FillStackTask(size);
+        ObjectStackFiller.Instance.AddFillTask(fillTask);
         stackParent = ParentTransform;
     }
 
